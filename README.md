@@ -3,6 +3,7 @@
 - [Setup](#setup)
 - [Configuration](#configuration)
 - [Aliases](#aliases)
+- [Select Elements](#select-elements)
 - [Stub XHR Requests](#stub-xhr-requests)
 - [Environment Variables](#environment-variables)
 - [TypeScript Support](#typescript-support)
@@ -57,6 +58,30 @@ Now you can use the alias inside a test, prefixed with an `@`, like this:
 it("my test", () => {
   cy.get("@myElement").click();
 });
+```
+
+## Select Elements
+
+Instead of using a CSS Selector to select an element it is considered as best practice to use data-\* attributes for selecting elements. Using data-\* attributes is a more robust solution.
+
+```html
+<p data-test="myElement" class="class1 class2">Hello world!</p>
+```
+
+```javascript
+cy.get("[data-test='myElement']");
+```
+
+You may create a Custom Commands for selecting elements and use it inside your tests.
+
+```javascript
+// Custom Command
+Cypress.Commands.add("getElByDataId", id => {
+  cy.get(`[data-test='${id}']`);
+});
+
+// Usage
+cy.getElByDataId("myElement");
 ```
 
 ## Stub XHR Requests
@@ -313,7 +338,7 @@ You'll find the generated report in `cypress/reports/report.html`.
 
 - Split application and test logic. Either using Page Objects or Custom Commands.
 - Separate test logic and test data. Save all your test data inside `fixtures/` and load them inside the test using `cy.fixture('myFile')`.
-- Focus on UI testling (with stubbed XHR) and only test the critical paths E2E.
+- Focus on UI testing (with stubbed XHR) and only test the critical paths E2E.
 - Do not slow down your tests with unnecessary sleeping, because Cypress automatically waits.
 - Test the application the way a user would use it. If possible use ARIA or data- attributes instead of CSS Selecors.
 - Assert frequently so you can reproduce the problem easier & faster.
