@@ -1,5 +1,11 @@
 # Cypress cheat sheet
 
+```
+These notes were written in mid-2019.
+It is possible that the information is no longer up to date.
+Please check the official Cypress documentation.
+```
+
 - [Setup](#setup)
 - [Configuration](#configuration)
 - [Aliases](#aliases)
@@ -18,7 +24,7 @@
 
 ## Setup
 
-Add Cypress via `npm i -D cypress` to your project and open the UI after installation with `cypress open`.  
+Add Cypress via `npm install cypress --save-dev` or `yarn add cypress --dev` to your project and open the UI after installation with `cypress open`.
 You may extend you script section inside your package.json like this:
 
 ```javascript
@@ -30,9 +36,10 @@ The first command will opeh the Cypress UI. The second will run Cypress in headl
 
 ## Configuration
 
-The minimum configuration inside the `cypress.json` should contain the baseUrl.  
-If you set the baseUrl you can omit passing the URL in methods like `cy.visit()`. It may also improve the startup time.  
-If you want to block requests from other hosts (e.g. from Google Analytics) add all these host to the `blacklistHosts` property.
+The minimum configuration inside the `cypress.json` should contain the baseUrl.
+If you set the baseUrl you can omit passing the URL in methods like `cy.visit()`. It may also improve the startup time.
+
+If you want to block requests from other hosts (e.g. from Google Analytics) add all these hosts to the `blacklistHosts` property.
 
 ```javascript
 // cypress.json
@@ -44,7 +51,7 @@ If you want to block requests from other hosts (e.g. from Google Analytics) add 
 
 ## Aliases
 
-Define Alias for Elements inside `beforeEach()` if you want to select an element in multiple tests.
+You can define an alias for elements inside `beforeEach()` if you want to select an element in multiple tests.
 
 ```javascript
 beforeEach(() => {
@@ -62,7 +69,7 @@ it("my test", () => {
 
 ## Select Elements
 
-Instead of using a CSS Selector to select an element it is considered as best practice to use data-\* attributes for selecting elements. Using data-\* attributes is a more robust solution.
+Instead of using a CSS Selector to select an element it is considered as best practice to use data-\* attributes for selecting elements. Using data-\* attributes is a more robust solution, because, unlike CSS classes, these do not normally change during development.
 
 ```html
 <p data-test="myElement" class="class1 class2">Hello world!</p>
@@ -72,11 +79,11 @@ Instead of using a CSS Selector to select an element it is considered as best pr
 cy.get("[data-test='myElement']");
 ```
 
-You may create a Custom Commands for selecting elements and use it inside your tests.
+You may create a Custom Command for selecting elements and use it inside your tests.
 
 ```javascript
 // Custom Command
-Cypress.Commands.add("getElByDataId", id => {
+Cypress.Commands.add("getElByDataId", (id) => {
   cy.get(`[data-test='${id}']`);
 });
 
@@ -93,7 +100,7 @@ To intercept XHR-Request you can stub calls like this.
 cy.route("GET", "/myRoute", []);
 ```
 
-Every call that goes against `/myRoute` will return an empty array as response, as the third parameter of the describes the response.  
+Every call that goes against `/myRoute` will return an empty array as response, as the third parameter describes the response.
 
 Be aware that Cypress can only intercept XMLHttpRequests.
 
@@ -155,7 +162,7 @@ module.exports = (on, config) => {
 };
 ```
 
-After that define all possible configurations and save them.
+After that you need to define possible configurations.
 
 ```javascript
 // cypress/config/stages/develop.json
@@ -190,39 +197,41 @@ cypress run --env configFile=$CI_COMMIT_REF_NAME
 
 ## TypeScript Support
 
-Install Cypress Webpack Preprocessor as devDependency with `npm i -D @cypress/webpack-preprocessor`.
+If you want to use TypeScript, the existing code base must be adapted in some places.
 
-Remove existing files from your `cypress/` folder and create following files.
+Install Cypress Webpack Preprocessor as devDependency with `npm install --save-dev @cypress/webpack-preprocessor` or `yarn add --dev @cypress/webpack-preprocessor`.
+
+Remove the existing files from your `cypress/` folder and create following files.
 
 ```javascript
 // cypress/plugins/cy-ts-preprocessor.js
 const wp = require("@cypress/webpack-preprocessor");
 const webpackOptions = {
   resolve: {
-    extensions: [".ts", ".js"]
+    extensions: [".ts", ".js"],
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         loaders: ["ts-loader"],
-        exclude: [/node_modules/]
+        exclude: [/node_modules/],
       },
       {
         test: /\.(html|css)$/,
         loader: "raw-loader",
-        exclude: /\.async\.(html|css)$/
+        exclude: /\.async\.(html|css)$/,
       },
       {
         test: /\.async\.(html|css)$/,
-        loaders: ["file?name=[name].[hash].[ext]", "extract"]
-      }
-    ]
-  }
+        loaders: ["file?name=[name].[hash].[ext]", "extract"],
+      },
+    ],
+  },
 };
 
 const options = {
-  webpackOptions
+  webpackOptions,
 };
 
 module.exports = wp(options);
@@ -279,14 +288,14 @@ declare global {
 }
 ```
 
-Now your environment is ready and you write your tests with TypeScript.
+Now your environment is ready and you can write your tests with TypeScript.
 
 ## Create Reports
 
 As Cypress is based on Mocha we can generate reports e.g. with [mochawesome-report-generator](mochawesome-report-generator).
 
-Install necessary devDependencies with `npm i -D mocha@5.2.0 mochawesome mochawesome-merge mochawesome-report-generator`.  
-Note: It seems that using moch ^6.0.0 throws a TypeError and fails if a report should be generated. Therefore we use mocha@5.2.0 ([GitHub issue](https://github.com/cypress-io/cypress/issues/3537)).
+Install the necessary devDependencies with `npm install --save-dev mocha@5.2.0 mochawesome mochawesome-merge mochawesome-report-generator` or `yarn add --dev mocha@5.2.0 mochawesome mochawesome-merge mochawesome-report-generator`.
+Note: It seems that using mocha^6.0.0 throws a TypeError and fails if a report should be generated. Therefore we use mocha@5.2.0 ([GitHub issue](https://github.com/cypress-io/cypress/issues/3537)).
 
 Extend your cypress.json to define the reporter options.
 
@@ -313,7 +322,7 @@ mochawesome-merge --reportDir cypress/reports/ > cypress/reports/reports.json &&
 If you do not specify the reporter inside the `cypress.json` you can pass the reporter like this:
 
 ```bash
-./node_modules/.bin/cypress run --reporter mochawesome
+cypress run --reporter mochawesome
 ```
 
 Modify the scripts section inside your package.json like this:
@@ -323,7 +332,7 @@ Modify the scripts section inside your package.json like this:
   "cypress:createReport": "mochawesome-merge --reportDir cypress/reports/ > cypress/reports/reports.json && marge cypress/reports/reports.json --reportDir cypress/reports/"
 ```
 
-Now you can call `npm run cypress:run && npm run cypress:createReport`.  
+Now you can call `npm run cypress:run && npm run cypress:createReport` or `yarn cypress:run && yarn cypress:createReport` to run the tests and create the report.
 You'll find the generated report in `cypress/reports/report.html`.
 
 ## Recommendations
@@ -339,33 +348,24 @@ You'll find the generated report in `cypress/reports/report.html`.
 
 ### Links
 
-Documentation  
-https://docs.cypress.io/guides/overview/why-cypress.html
+[Documentation](https://docs.cypress.io/guides/overview/why-cypress.html)
 
-Gleb Bahmutov  
-https://glebbahmutov.com/blog/tags/cypress/
+[Gleb Bahmutov](https://glebbahmutov.com/blog/tags/cypress/)
 
 ### Online Courses
 
-Test Production Ready Apps with Cypress  
-https://egghead.io/courses/test-production-ready-apps-with-cypress
+[Test Production Ready Apps with Cypress](https://egghead.io/courses/test-production-ready-apps-with-cypress)
 
-End to End testing with Cypress  
-https://egghead.io/courses/end-to-end-testing-with-cypress
+[End to End testing with Cypress](https://egghead.io/courses/end-to-end-testing-with-cypress)
 
 ### Plugins
 
-Cypress Image Snapshot  
-https://www.npmjs.com/package/cypress-image-snapshot
+[Cypress Image Snapshot](https://www.npmjs.com/package/cypress-image-snapshot)
 
-Percy (Visual Testing & Review)  
-https://docs.percy.io/docs/cypress
+[Percy (Visual Testing & Review)](https://docs.percy.io/docs/cypress)
 
-cypress-skip-and-only-ui  
-https://www.npmjs.com/package/cypress-skip-and-only-ui
+[cypress-skip-and-only-ui](https://www.npmjs.com/package/cypress-skip-and-only-ui)
 
-cypress-watch-and-reload  
-https://www.npmjs.com/package/cypress-watch-and-reload
+[cypress-watch-and-reload](https://www.npmjs.com/package/cypress-watch-and-reload)
 
-cypress-testing-library  
-https://www.npmjs.com/package/@testing-library/cypress
+[cypress-testing-library](https://www.npmjs.com/package/@testing-library/cypress)
